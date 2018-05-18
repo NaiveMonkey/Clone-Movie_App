@@ -4,48 +4,47 @@ import Movie from './Movie';
 
 class App extends Component {
 
-    state = {}
+    state = {};
 
     componentDidMount() {
-        setTimeout(() => {
-            this.setState({
-                movies: [
-                    {
-                        title: "Matrix",
-                        poster: "https://ia.media-imdb.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SY1000_CR0,0,665,1000_AL_.jpg",
-                    },
-                    {
-                        title: "Full Metal Jacket",
-                        poster: "https://images-na.ssl-images-amazon.com/images/I/41MN0ANVJTL.jpg"
-                    },
-                    {
-                        title: "Oldboy",
-                        poster: "https://www.languagetrainers.com/reviews/foreign-film-reviews/uploads/9214-Oldboy.jpg"
-                    },
-                    {
-                        title: "Star Wars",
-                        poster: "https://starwarsblog.starwars.com/wp-content/uploads/sites/6/2017/10/the-last-jedi-theatrical-blog.jpg"
-                    },
-                    {
-                        title: "Head Hunter",
-                        poster: "https://greecetonorway.files.wordpress.com/2014/03/headhunters-2011-movie-poster.jpg?w=665"
-                    }
-                ]
-            })
-        }, 5000)
+        this._getMovies();
     }
 
     _renderMovies = () => {
-        const movies = this.state.movies.map((movie, index) => {
-            return <Movie title={movie.title} poster={movie.poster} key={index}/>
-        })
+        const movies = this.state.movies.map(movie => {
+            return (<Movie
+                title={movie.title_english}
+                poster={movie.medium_cover_image}
+                key={movie.id}
+                genres={movie.genres}
+                synopsis={movie.synopsis}
+            />
+            );
+        });
         return movies
-    }
+    };
+
+    _getMovies = async () => {
+        const movies = await this._callApi();
+        this.setState({
+            movies
+        });
+    };
+
+
+    _callApi = () => {
+        // fetch 를 통헤 url 을 ajax 로 불러올 수 있
+        return fetch('https://yts.am/api/v2/list_movies.json?sort_by=download_count')
+            .then(response => response.json())
+            .then(json => json.data.movies)
+            .catch(err => console.log(err))
+    };
 
     render() {
+        const{movies} = this.state
         return (
-            <div className="App">
-                {this.state.movies ? this._renderMovies() : 'Loading'}
+            <div className={movies ? "App" : "App--loading"}>
+                {movies ? this._renderMovies() : 'Loading'}
             </div>
         );
     }
